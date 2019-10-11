@@ -4,7 +4,7 @@ def window(x,y):
     brushColor('white')
     #Окно снизу справа
     rectangle(x,y,x-40,y-60) #большая рамка
-    brushColor(164,223,242) 
+    brushColor(164,223,242)
     rectangle(x-1,y-1,x-39,y-59)#малая рамка
     penSize(3)
     line(x,y-40,x-40,y-40)
@@ -41,7 +41,7 @@ def ellipse (x,y,x1,y1,a):
 
 def klubok(size,x,y):#координаты относительно начала СО
     brushColor(153,153,153)
-    circle(x,y,28*size) 
+    circle(x,y,28*size)
     polyline([(x+12*size, y+8*size),(x+10*size,y ),(x+5*size, y-3*size),(x-8*size,y-15*size)]) # вторая линия сверху
     polyline([(x+20*size,y+1*size),(x,y-13*size),(-5*size+x,y-18*size),(-16*size+x,-24*size+y)])# первая линия сверху
     polyline([(x+5*size, y+24*size),(+8*size+x,17*size+y),(+12*size+x,10*size+y)])# самая правая
@@ -88,10 +88,10 @@ rectangle(0,0,500,313)
 for i in range(7):
     for j in range(3):
         window(40*(i+1)+30*(i+1),60*(j+1)+50*(j))
-global x0
 x0=85
-global y0
 y0=380
+x=-50
+y=50
 brushColor(190,110,60)
 penColor(190,110,60)
 penSize(1)
@@ -107,23 +107,73 @@ kot2=kot(170,550,cr2,-1,0.3)
 kot3=kot(360,500,cr3,1,0.3)
 kot4=kot(450,450,cr4,-1,0.3)
 kot5=kot(450,550,cr5,1,0.3)
-def moving(OBJ, x, y, x0, y0):
+def moving0(OBJ):
+    global x0
+    global y0
+    global x
+    global y
     for obj in OBJ:
-        if (x0 < 0) or (x0> 500):
+        if (x0 < 0) and (x < 0):
             x = -x
-        if (y0< 0) or (y0 > 700):
+        if (x0 > 500) and (x > 0):
+            x = -x
+        if (y0 < 0) and (y < 0):
+            y = -y
+        if (y0 > 600) and (y > 0):
             y = -y
         moveObjectBy(obj, x, y)
     x0=x0+x
     y0=y0+y
+x02=170
+y02=550
+x2=40
+y2=-40
+def moving2(OBJ):
+    global x02
+    global y02
+    global x2
+    global y2
+    for obj in OBJ:
+        if (x02 < 0) and (x2 < 0):
+            x2 = -x2
+        if (x02 > 500) and (x2 > 0):
+            x2 = -x2
+        if (y02 < 0) and (y2 < 0):
+            y2 = -y2
+        if (y02 > 600) and (y2 > 0):
+            y2 = -y2
+        moveObjectBy(obj, x2, y2)
+    x02=x02+x2
+    y02=y02+y2
+x01=140
+y01=450
+x1=1
+y1=-1
+def moving1(OBJ):
+    global x01
+    global y01
+    global x1
+    global y1
+    for obj in OBJ:
+        if (x01 < 0) and (x1 < 0):
+            x1 = -x1
+        if (x01 > 500) and (x1 > 0):
+            x1 = -x1
+        if (y01 < 0) and (y1 < 0):
+            y1 = -y1
+        if (y01 > 600) and (y1 > 0):
+            y1 = -y1
+        moveObjectBy(obj, x1, y1)
+    x01=x01+x1
+    y01=y01+y1
 def update():
-    moving(kot0, 40, -40, x0, y0)
-    moving(kot1, -40, 40,x0, y0)
-    moving(kot2, 50, 40,x0, y0)
-    moving(kot3, 40, 190, x0, y0)
-    moving(kot4, 10, 40, x0, y0)
-    moving(kot5, 40, 15, x0, y0)
-onTimer(update, 100)
+    moving0(kot0)
+    moving1(kot1)
+    moving2(kot2)
+    #moving(kot3)
+    #moving(kot4)
+    #moving(kot5)
+onTimer(update, 1)
 klubok(0.5,375,550)
 klubok(0.5,150,370)
 klubok(0.5,375,460)
