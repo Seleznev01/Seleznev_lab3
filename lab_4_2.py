@@ -7,10 +7,18 @@ root.geometry('800x600')
 canv = Canvas(root,bg = 'white')
 canv.pack(fill = BOTH,expand = 1)
 
+def Name():
+        print('NAME:')
+        name = str(input())
+        file = open('Players.txt', 'a')
+        file.write(name)
+        file.write(' - ')
+        file.close()
 colors = ['red','orange','yellow','green','blue']
 score = 0
+Name()
 Balls = []
-
+mistake=0
 
 class Ball:
 
@@ -55,16 +63,25 @@ def Start():
         canv.delete('ball')
         Create()
         Play()
-
 def click(event):
-        global Numb, score, count
+        global Numb, score, mistake
+        mistake +=1
         for i in Balls:
                 if ((event.x - i.x) ** 2 + (event.y - i.y) ** 2) ** 0.5 <= i.r:
                         score += 1
                         canv.delete('score')
                         canv.create_text(750, 50, text = str(score), justify = CENTER, font = "Verdana 14", tag = 'score')
                         i.Delete()
+                        mistake -=1
+                        Balls.remove(i)
                         Balls.append(Ball())
+        if mistake==6:
+                root.quit()
+                print('Score:', score)
+                file = open('Players.txt', 'a')
+                file.write(str(score))
+                file.write('\n')
+                file.close()
 canv.bind('<Button-1>', click)
 Start()
 mainloop()
