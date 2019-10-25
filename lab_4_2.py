@@ -3,10 +3,10 @@ from random import randrange as rnd, choice
 import time
 root = Tk()
 root.geometry('800x600')
-
 canv = Canvas(root,bg = 'white')
 canv.pack(fill = BOTH,expand = 1)
-
+score = 0
+l = Label(bg='black', fg='white', width=20)
 def Name():
         print('NAME:')
         name = str(input())
@@ -15,7 +15,6 @@ def Name():
         file.write(' - ')
         file.close()
 colors = ['red','orange','yellow','green','blue']
-score = 0
 Name()
 Balls = []
 mistake=0
@@ -64,13 +63,13 @@ def Start():
         Create()
         Play()
 def click(event):
-        global Numb, score, mistake
+        global Numb, score, mistake, l
         mistake +=1
         for i in Balls:
                 if ((event.x - i.x) ** 2 + (event.y - i.y) ** 2) ** 0.5 <= i.r:
                         score += 1
                         canv.delete('score')
-                        canv.create_text(750, 50, text = str(score), justify = CENTER, font = "Verdana 14", tag = 'score')
+                        canv.create_text(750, 50, text=str(score), justify=CENTER, font="Verdana 14", tag='score')
                         i.Delete()
                         mistake -=1
                         Balls.remove(i)
@@ -84,4 +83,12 @@ def click(event):
                 file.close()
 canv.bind('<Button-1>', click)
 Start()
-mainloop()
+def myf():
+        global score
+        file = open('Players.txt', 'a')
+        file.write(str(score))
+        file.write('\n')
+        file.close()
+        root.destroy()
+root.protocol('WM_DELETE_WINDOW', myf)
+root.mainloop()
