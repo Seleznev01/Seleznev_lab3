@@ -58,8 +58,8 @@ class Doodle():
 
     def move_right(self):
         if self.x > 800:
-            self.x = -60
-            c.move("doodle", self.x - 800 - 20, 0)
+            self.x = -60 + self.vx
+            c.move("doodle", self.x - 800 - 20 + self.vx, 0)
         else:
             self.x += self.vx
         c.move("doodle", self.vx, 0)
@@ -181,13 +181,12 @@ def key(event):
         doodle.move_right()
 
 
-checker = 0
 
-
+score = 0
 # основной ход игры ПРОБЛЕМА - не знаю, как реализовать
 def game_main():
-    global start, v_0, p_lim, Level, checker
-    if start:
+    global start, v_0, p_lim, Level, platforms, score
+    if start :
         c.bind('<Key>', key)
         generate_platforms()
         doodle.vy = v_0
@@ -198,6 +197,22 @@ def game_main():
             # generate_extra_platforms()
             if not pause:
                 scr_upd()  # функция, которая занимается движением всего на экране
+    if not doodle.life: ### ЗДЕСЬ
+        root.destroy()
+        Res.write(str(score) + '\n')
+        Res.close()
+        lose = Tk()
+        lose.geometry('300x200')
+        lose.configure(background='blue')
+        button_lose = Button(lose, text="Выйти", width=20, height=3, font='arial 14', bg="light yellow")
+        button_lose.place(x=40, y=70)  # кнопка, отвечающая за старт игры
+        lbl_lose= Label(lose,
+                         text='Поздравляю, ваш счет: ' + str(score),
+                         font='Times 14', fg="black", bg="blue")
+        lbl_lose.place(x=22, y=20)  # Приветствие
+        def BTM(event):
+            lose.destroy()
+        button_lose.bind('<Button-1>', BTM)
 
 
 Res = open("Res.txt", "a", newline="\n")
@@ -300,4 +315,5 @@ def Menu():
 
 Menu()  # вызывает в самом начале меню для игры
 mainloop()
+
 
