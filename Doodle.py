@@ -2,8 +2,9 @@ from tkinter import *
 from random import *
 from time import *
 
-root = Tk()
 
+root = Tk()
+root.iconify()
 c = Canvas(root, width=800, height=1000, bg='white')
 c.pack()
 root.geometry('800x1000')
@@ -57,8 +58,8 @@ class Doodle():
 
     def move_right(self):
         if self.x > 800:
-            self.x += self.vx - 800
-            c.move("doodle", -800 + self.vx - 30, 0)
+            self.x = -60
+            c.move("doodle", self.x - 800 - 20, 0)
         else:
             self.x += self.vx
         c.move("doodle", self.vx, 0)
@@ -207,6 +208,7 @@ def Menu():
     global check  # Счетчик для проверки на сохранение имени
     global Res  # Файл с результатами
     global window  # экран, отвечающий за интерфейс
+    global root
     window = Tk()
     window.title("Doodle Jump")
     window.geometry("350x400")
@@ -267,11 +269,12 @@ def Menu():
         Menu()
 
     def NEW_GAME(event):
+        global root
         global button_1
         window.destroy()
         c.focus_set()
-        game_main()
         root.deiconify()
+        game_main()
 
     def Instruction(event):
         global button1, button2, button3
@@ -297,4 +300,4 @@ def Menu():
 
 Menu()  # вызывает в самом начале меню для игры
 mainloop()
-withdraw(window)
+
