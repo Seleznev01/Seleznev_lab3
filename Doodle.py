@@ -3,23 +3,20 @@ from random import *
 from time import *
 check = True
 while check:
-    from tkinter import *
-    from random import *
-    from time import *
-
     root = Tk()
     root.iconify()
     c = Canvas(root, width=800, height=1000, bg='white')
     c.pack()
     root.geometry('800x1000')
-    v_0 = 0.5  # скорость при отскоке от платформы
+    v_0 = 8  # скорость при отскоке от платформы
     Level = 400  # линия, выше которой не поднимается изображение дудла на экране
     P_Width = 80  # ширина платформы
     P_Height = 5  # толщина платформы
     doodle_stop = False  # переменная отвечает за тип движения объектов (true - движутся платформы, false - дудл)
     start = True  # отвечает за начало игры
     pause = False  # отвечает за приостановку игры
-    p_lim = 90  # начальная вероятность появления платформы
+    p_lim_0 = 950  # минимальная вероятность (не)появления
+    score = 0  # счётчик очков
 
 
     # функция рисует иконку дудла
@@ -62,8 +59,8 @@ while check:
 
         def move_right(self):
             if self.x > 800:
-                self.x = -60 + self.vx
-                c.move("doodle", self.x - 800 - 20 + self.vx, 0)
+                self.x = -60
+                c.move("doodle", self.x - 800 - 20, 0)
             else:
                 self.x += self.vx
             c.move("doodle", self.vx, 0)
@@ -71,6 +68,9 @@ while check:
 
     # собственно его единственный экземпляр
     doodle = Doodle()
+
+    # это массив платформ
+    platforms = []
 
 
     # класс платформ
@@ -87,57 +87,71 @@ while check:
             self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='green')
 
         def upd(self):
-            if self.y > 1600:
+            if self.y > 800:
                 self.life = False
-            self.y += doodle.vy
-            c.move(self.obj, 0, doodle.vy)
+                c.delete(self.obj)
+                platforms.remove(self)
+                del self
+            else:
+                self.y += doodle.vy
+                c.move(self.obj, 0, doodle.vy)
 
-
-    # это массив платформ
-    platforms = []
+        def usl(self):
+            if self.y > 800:
+                self.life = False
+                c.delete(self.obj)
+                platforms.remove(self)
+            else:
+                self.y += 0
+                c.move(self.obj, 0, 0)
 
 
     # функция,которая гененрирует платформы во время игры
     def generate_extra_platforms():
         n = 1
         h = 10
+        p_lim = p_lim_0 + 0.02 * score
+        if p_lim > 990:
+            p_lim = 990
         l = platforms[len(platforms) - 1].y
-        if doodle.y <= Level and -400 < l < 0:
-            for i in range(1, 40):
-                for k in range(1, 10):
-                    a = randrange(1, 100)
+        if doodle.y <= Level and -200 < l:
+            for i in range(0, 20):
+                for k in range(0, 10):
+                    a = randrange(0, 1000)
                     if a > p_lim:
-                        platforms.append(Platform((k - 1) * P_Width, l - (i - 1) * h))
+                        platforms.append(Platform(k * P_Width, l - i * h))
 
 
     # функция,которая генерирует платформы в начале игры:
     def generate_platforms():
         global P_Width, P_Height
-        h = 15
-        for i in range(1, 100):
+        h = 10
+        for i in range(0, 120):
             for k in range(0, 10):
-                a = randrange(1, 100)
-                if a > p_lim:
-                    platforms.append(Platform(k * P_Width, (i - 1) * h))
+                a = randrange(0, 1000)
+                if a > p_lim_0:
+                    platforms.append(Platform(k * P_Width, 1000 - i * h))
 
 
     # проверяет, напрыгнул ли дудл на платформу, а ещё удаляет платформы ниже экрана (по всем платформам)
     def jump_check():
         for p in platforms:
-            if not p.life:
-                c.delete(p.obj)
-                platforms.remove(p)
-            elif (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
-                    p.y - 10 <= doodle.y <= p.y + P_Height):
+            if (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (p.y - 10 <= doodle.y <= p.y + P_Height):
                 doodle.vy = v_0
 
 
     # функция, которая проверяет, что должно двигаться : дудл или платформы
     def change_check():
-        global doodle_stop
-        if doodle.y <= Level and doodle.vy >= 0:
+        global doodle_stop, score
+        if doodle.y <= Level and doodle_stop == False and doodle.vy >= 0:
             doodle_stop = True
-        elif doodle.vy < 0:
+            H = doodle.y - (doodle.vy * doodle.vy) / (2 * doodle.g)
+            if H < Level:
+                score += int((Level - H) / 8)
+        elif doodle.vy < 0 and doodle_stop == True:
+            H = doodle.y - (doodle.vy * doodle.vy) / (2 * doodle.g)
+            if H < Level:
+                score += int((Level - H) / 8)
             doodle_stop = False
 
 
@@ -147,36 +161,19 @@ while check:
         if doodle_stop:
             for p in platforms:
                 p.upd()
-        c.update()
-
-
-    # запуск игры
-    def start_game():
-        global start
-        if not start:
-            c.delete(ALL)
-            generate_platforms()  # функция, которая генерит платформы в начале
-            start = True
-            game_main()
         else:
-            c.delete(ALL)
+            for p in platforms:
+                p.usl()
+        c.update()
 
 
     # приостановка и возобновление игры
     def pause_game(event):
-        global doodle, pause, d_vy, g_0, platforms, platforms_data
+        global pause
         if start and pause:
             pause = False
         elif start and not pause:
             pause = True
-
-
-    # выход из игры
-    def stop_game(event):
-        global start
-        if start:
-            c.delete(ALL)
-            start = False
 
 
     def key(event):
@@ -186,49 +183,61 @@ while check:
             doodle.move_right()
 
 
-    score = 0
-
-
-    # основной ход игры ПРОБЛЕМА - не знаю, как реализовать
+    # основной ход игры
     def game_main():
-        global start, v_0, p_lim, Level, platforms, score, check
+        global start, v_0, p_lim, score, check
         if start:
             c.bind('<Key>', key)
             generate_platforms()
             doodle.vy = v_0
-            doodle.g = 0.001
+            doodle.g = 0.1
+            Text = "Score:" + str(score)
+            label1 = Label(root, text=Text)
+            label1_x = 600
+            label1_y = 50
+            label1.place(x=label1_x, y=label1_y)
             while doodle.life:
+                label1.destroy()
+                Text = "Score:" + str(score)
+                label1 = Label(root, text=Text)
+                label1.place(x=label1_x, y=label1_y)
                 jump_check()
                 change_check()
-                # generate_extra_platforms()
+                generate_extra_platforms()
                 if not pause:
                     scr_upd()  # функция, которая занимается движением всего на экране
-        if not doodle.life:  ### ЗДЕСЬ
-            root.destroy()
-            Res.write(str(score) + '\n')
-            Res.close()
-            lose = Tk()
-            lose.geometry('300x300')
-            lose.configure(background='blue')
-            button_lose = Button(lose, text="Вернуться  меню", width=20, height=3, font='arial 14', bg="light yellow")
-            button_lose.place(x=40, y=70)  # кнопка, отвечающая за старт игры
-            lbl_lose = Label(lose,
-                             text='Поздравляю, ваш счет: ' + str(score),
-                             font='Times 14', fg="black", bg="blue")
-            lbl_lose.place(x=50, y=20)  # Приветствие
+            if not doodle.life:
+                root.destroy()
+                Res.write(str(score) + ' ')
+                Res.close()
+                lose = Tk()
+                lose.geometry('300x300')
+                lose.configure(background='blue')
+                button_lose = Button(lose, text="Вернуться к меню", width=20, height=3, font='arial 14',
+                                     bg="light yellow")
+                button_lose.place(x=40, y=70)  # кнопка, отвечающая за старт игры
+                lbl_lose = Label(lose,
+                                 text='Поздравляю, ваш счет: ' + str(score),
+                                 font='Times 14', fg="black", bg="blue")
+                lbl_lose.place(x=50, y=20)  # Приветствие
 
-            def BTM(event):
-                global score
-                lose.destroy()
-            button_lose.bind('<Button-1>', BTM)
-            button_exit = Button(lose, text="Выйти", width=20, height=3, font='arial 14', bg="light yellow")
-            button_exit.place(x=40, y=170)  # кнопка, отвечающая за старт игры
-            def exit(event):
-                global check
-                check = False
-                lose.destroy()
+                def BTM(event):
+                    global score
+                    lose.destroy()
+                button_lose.bind('<Button-1>', BTM)
+                button_exit = Button(lose, text="Выйти", width=20, height=3, font='arial 14', bg="light yellow")
+                button_exit.place(x=40, y=170)  # кнопка, отвечающая за старт игры
 
-            button_exit.bind('<Button-1>', exit)
+                def exit(event):
+                    global check
+                    check = False
+                    lose.destroy()
+                    Res.write('\n')
+
+                button_exit.bind('<Button-1>', exit)
+
+                button_lose.bind('<Button-1>', BTM)
+
 
     Res = open("Res.txt", "a", newline="\n")
 
@@ -331,5 +340,3 @@ while check:
 
     Menu()  # вызывает в самом начале меню для игры
     root.mainloop()
-
-
