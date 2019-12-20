@@ -2,6 +2,7 @@ from tkinter import *
 from random import *
 from time import *
 check = True
+Res = open("Res.txt", "a", newline="\n")
 while check:
     root = Tk()
     root.iconify()
@@ -76,15 +77,19 @@ while check:
     # класс платформ
     class Platform():
 
-        def __init__(self, x1, y1):
+        def __init__(self, x1, y1,type):
             self.width = P_Width
             self.height = P_Height
             self.x = x1
             self.y = y1
             self.vx = 0
             self.vy = 0
+            self.type = type
             self.life = True
-            self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='green')
+            if self.type == 1:
+                self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='green')
+            if self.type == 2:
+                self.obj = c.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill='brown')
 
         def upd(self):
             if self.y > 800:
@@ -118,8 +123,13 @@ while check:
             for i in range(0, 20):
                 for k in range(0, 10):
                     a = randrange(0, 1000)
+                    b = randrange(1, 100)
+                    if b > 20:
+                        tip = 1
+                    else:
+                        tip = 2
                     if a > p_lim:
-                        platforms.append(Platform(k * P_Width, l - i * h))
+                        platforms.append(Platform(k * P_Width, l - i * h,tip))
 
 
     # функция,которая генерирует платформы в начале игры:
@@ -129,15 +139,26 @@ while check:
         for i in range(0, 120):
             for k in range(0, 10):
                 a = randrange(0, 1000)
+                b = randrange(1, 100)
+                if b > 20:
+                    tip = 1
+                else:
+                    tip = 2
                 if a > p_lim_0:
-                    platforms.append(Platform(k * P_Width, 1000 - i * h))
+                    platforms.append(Platform(k * P_Width, 1000 - i * h,tip))
 
 
     # проверяет, напрыгнул ли дудл на платформу, а ещё удаляет платформы ниже экрана (по всем платформам)
     def jump_check():
         for p in platforms:
-            if (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (p.y - 10 <= doodle.y <= p.y + P_Height):
+            if (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
+                    p.y - 10 <= doodle.y <= p.y + P_Height) and p.type != 2:
                 doodle.vy = v_0
+            elif (doodle.vy <= 0) and (p.x - 60 < doodle.x < p.x + p.width) and (
+                    p.y - 10 <= doodle.y <= p.y + P_Height) and p.type == 2:
+                doodle.vy = v_0
+                platforms.remove(p)
+                c.delete(p.obj)
 
 
     # функция, которая проверяет, что должно двигаться : дудл или платформы
@@ -209,7 +230,6 @@ while check:
             if not doodle.life:
                 root.destroy()
                 Res.write(str(score) + ' ')
-                Res.close()
                 lose = Tk()
                 lose.geometry('300x300')
                 lose.configure(background='blue')
@@ -239,8 +259,6 @@ while check:
                 button_lose.bind('<Button-1>', BTM)
 
 
-    Res = open("Res.txt", "a", newline="\n")
-
 
     def Menu():
         global check  # Счетчик для проверки на сохранение имени
@@ -268,6 +286,14 @@ while check:
         button_save.place(x=60, y=130)
         lbl_gl = Label(window, font='Times 14', fg="black", bg="blue")  # Пожелание хорошей игры
         lbl_gl.place(x=20, y=60)
+
+        def myf():
+            global check
+            window.destroy()
+            root.destroy()
+            check = False
+            Res.write('\n')
+        window.protocol('WM_DELETE_WINDOW', myf)
 
         if (check == 1):  # Проверка на дибила, если имя не записал
             lbl_name.destroy()
@@ -340,3 +366,4 @@ while check:
 
     Menu()  # вызывает в самом начале меню для игры
     root.mainloop()
+Res.close()
